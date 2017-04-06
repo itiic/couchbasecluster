@@ -1,0 +1,68 @@
+version: '3'
+
+services:
+    couchbase1:
+        image: couchbase/server
+        hostname: couchbase1
+        volumes:
+            - ./volumes/node1:/opt/couchbase/var
+        ports:
+            - 8091:8091
+            - 8092:8092
+            - 8093:8093
+            - 11210:11210
+        networks:
+            couchcluster:
+                aliases:
+                  - couchbase1.couchcluster
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:8091"]
+            interval: 10s
+            timeout: 6s
+            retries: 6
+    couchbase2:
+        image: couchbase/server
+        hostname: couchbase2
+        volumes:
+            - ./volumes/node2:/opt/couchbase/var
+        networks:
+            couchcluster:
+                aliases:
+                  - couchbase2.couchcluster
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:8091"]
+            interval: 10s
+            timeout: 6s
+            retries: 6
+    couchbase3:
+        image: couchbase/server
+        hostname: couchbase3
+        volumes:
+            - ./volumes/node3:/opt/couchbase/var
+        networks:
+            couchcluster:
+                aliases:
+                  - couchbase3.couchcluster
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:8091"]
+            interval: 10s
+            timeout: 6s
+            retries: 6
+    util:
+        build: util
+        depends_on:
+            - couchbase1
+            - couchbase2
+            - couchbase3
+        networks:
+            couchcluster:
+                aliases:
+                  - util.couchcluster
+    centos:
+        image: centos
+        networks:
+            couchcluster:
+                aliases:
+                  - centos.couchcluster
+networks:
+    couchcluster:
